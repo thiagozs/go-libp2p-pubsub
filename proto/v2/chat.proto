@@ -1,0 +1,22 @@
+syntax = "proto3";
+package proto;
+
+message Request {
+  enum Type {
+    SEND_MESSAGE = 0;
+    UPDATE_PEER = 1;
+  }
+  Type type = 1;
+  SendMessage sendMessage = 2;
+  UpdatePeer updatePeer = 3;
+}
+
+message SendMessage {
+    bytes data = 1;
+    int64 created = 2;
+    bytes id = 3;
+}
+
+message UpdatePeer {
+  bytes userHandle = 1;
+}
