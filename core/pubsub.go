@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gogo/protobuf/proto"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	proto "github.com/thiagozs/go-libp2p-pubsub/proto/v1"
+	buffer "github.com/thiagozs/go-libp2p-pubsub/proto/v2"
 )
 
 var handles = map[string]string{}
@@ -15,7 +16,7 @@ var handles = map[string]string{}
 // Topic channel
 const Topic = "/libp2p-pubsub/chat/thiagozs"
 
-func pubsubMessageHandler(id peer.ID, msg *proto.SendMessage) {
+func pubsubMessageHandler(id peer.ID, msg *buffer.SendMessage) {
 	handle, ok := handles[id.String()]
 	if !ok {
 		handle = id.ShortString()
@@ -23,7 +24,7 @@ func pubsubMessageHandler(id peer.ID, msg *proto.SendMessage) {
 	fmt.Printf("%s: %s\n", handle, msg.Data)
 }
 
-func pubsubUpdateHandler(id peer.ID, msg *proto.UpdatePeer) {
+func pubsubUpdateHandler(id peer.ID, msg *buffer.UpdatePeer) {
 	oldHandle, ok := handles[id.String()]
 	if !ok {
 		oldHandle = id.ShortString()
@@ -41,17 +42,17 @@ func PubsubHandler(ctx context.Context, sub *pubsub.Subscription) {
 			continue
 		}
 
-		req := &proto.Request{}
-		err = req.Unmarshal(msg.Data)
+		req := &buffer.Request{}
+		err = proto.Unmarshal(msg.Data, req)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 
-		switch *req.Type {
-		case proto.Request_SEND_MESSAGE:
+		switch req.Type.String() {
+		case buffer.Request_SEND_MESSAGE.String():
 			pubsubMessageHandler(msg.GetFrom(), req.SendMessage)
-		case proto.Request_UPDATE_PEER:
+		case buffer.Request_UPDATE_PEER.String():
 			pubsubUpdateHandler(msg.GetFrom(), req.UpdatePeer)
 		}
 	}

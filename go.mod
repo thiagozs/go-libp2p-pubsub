@@ -3,6 +3,7 @@ module github.com/thiagozs/go-libp2p-pubsub
 go 1.13
 
 require (
+	github.com/gogo/protobuf v1.2.1
 	github.com/golang/protobuf v1.3.0
 	github.com/libp2p/go-libp2p v0.2.0
 	github.com/libp2p/go-libp2p-core v0.0.6
