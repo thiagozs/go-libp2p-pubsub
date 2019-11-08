@@ -50,31 +50,39 @@ func main() {
 		"/ip4/0.0.0.0/tcp/0/ws",
 	)
 
+	// create a hash table addrs
 	var dht *kaddht.IpfsDHT
 	newDHT := func(h host.Host) (router.PeerRouting, error) {
 		var err error
 		dht, err = kaddht.New(ctx, h)
 		return dht, err
 	}
-
+	// routing with opt with dht
 	routing := libp2p.Routing(newDHT)
 
+	// start libp2p
 	host, err := libp2p.New(ctx, transports, listenAddrs, muxers, security, routing)
 	if err != nil {
 		panic(err)
 	}
 
+	// start pubsub engine
 	ps, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
 		panic(err)
 	}
+
+	// subscribe for a topic
 	sub, err := ps.Subscribe(core.Topic)
 	if err != nil {
 		panic(err)
 	}
 
+	// Start counters
+	cc := core.NewCounters()
+
 	// handler for messages
-	go core.PubsubHandler(ctx, sub)
+	go core.PubsubHandler(cc, ctx, sub)
 
 	// list address for listering
 	for _, addr := range host.Addrs() {
@@ -114,17 +122,19 @@ func main() {
 
 	// handler chat input
 	donec := make(chan struct{}, 1)
-	go core.ChatInputLoop(ctx, host, ps, donec)
+	go core.ChatInputLoop(cc, ctx, host, ps, donec)
 
 	// monitoring program stats
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT)
 
 	select {
-	case <-stop:
+	case <-stop: // exit program
+		dht.Close()
+		host.Network().Close()
 		host.Close()
 		os.Exit(0)
-	case <-donec:
+	case <-donec: // finish command close with host
 		host.Close()
 	}
 }

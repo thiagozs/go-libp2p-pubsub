@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gogo/protobuf/proto"
 	peer "github.com/libp2p/go-libp2p-core/peer"
@@ -16,11 +17,18 @@ var handles = map[string]string{}
 // Topic channel
 const Topic = "/libp2p-pubsub/chat/thiagozs"
 
-func pubsubMessageHandler(id peer.ID, msg *buffer.SendMessage) {
+func pubsubMessageHandler(cc *counters, id peer.ID, msg *buffer.SendMessage) {
 	handle, ok := handles[id.String()]
 	if !ok {
 		handle = id.ShortString()
 	}
+
+	// if string has contais pipe, dont show message just count.
+	if strings.Contains(string(msg.Data), "|") {
+		cc.Add(fmt.Sprintf("%s|%s", handle, msg.Data))
+		return
+	}
+
 	fmt.Printf("%s: %s\n", handle, msg.Data)
 }
 
@@ -34,7 +42,8 @@ func pubsubUpdateHandler(id peer.ID, msg *buffer.UpdatePeer) {
 }
 
 // PubsubHandler start listenner and send message
-func PubsubHandler(ctx context.Context, sub *pubsub.Subscription) {
+func PubsubHandler(cc *counters, ctx context.Context, sub *pubsub.Subscription) {
+
 	for {
 		msg, err := sub.Next(ctx)
 		if err != nil {
@@ -51,7 +60,7 @@ func PubsubHandler(ctx context.Context, sub *pubsub.Subscription) {
 
 		switch req.Type.String() {
 		case buffer.Request_SEND_MESSAGE.String():
-			pubsubMessageHandler(msg.GetFrom(), req.SendMessage)
+			pubsubMessageHandler(cc, msg.GetFrom(), req.SendMessage)
 		case buffer.Request_UPDATE_PEER.String():
 			pubsubUpdateHandler(msg.GetFrom(), req.UpdatePeer)
 		}

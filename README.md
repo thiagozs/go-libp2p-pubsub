@@ -1,6 +1,6 @@
 # Golang go-libp2p-pubsub
 
-Study of new go-libp2p for introduction protobuf with protocol.
+Study of new go-libp2p for introduction protobuf with protocol. Proof of concept.
 
 Stack of development
 
@@ -30,3 +30,12 @@ Just you need run the command for compile you `.proto` on yours folder
 ```shell=
 $ protoc --go_out=. *.proto
 ```
+
+### Chat commands
+
+For test message stress, you can run a command for each peer. Just type
+
+* `/msgtimer 100 100 metrics`, send a message with 100 miliseconds of delay, write a 100 messages with the slug metrics
+* `/name your-nickname`, change our nickname
+* `/stats`, show stats about the messages stress
+* `/reset`, reset stats about the messages stress
