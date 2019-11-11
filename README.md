@@ -35,7 +35,17 @@ $ protoc --go_out=. *.proto
 
 For test message stress, you can run a command for each peer. Just type
 
-* `/msgtimer 100 100 metrics`, send a message with 100 miliseconds of delay, write a 100 messages with the slug metrics
+* `/msgtimer 100 100 metrics`, send a message with 100 miliseconds of delay, write a 100 messages with the slug `metrics`
 * `/name your-nickname`, change our nickname
 * `/stats`, show stats about the messages stress
 * `/reset`, reset stats about the messages stress
+
+### Compile
+
+* `make build` or only `make`
+
+### Versioning and license
+
+Our version numbers follow the [semantic versioning specification](http://semver.org/). For more details about our license model, please take a look at the [LICENSE](LICENSE) file.
+
+**2019**, thiagozs.

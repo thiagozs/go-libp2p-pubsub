@@ -90,7 +90,10 @@ func main() {
 	}
 
 	// change for real bootstrap
-	targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/4001/ipfs/QmXBbs4x3E7f8TNgZPCcG38vgRFiZdeAC6qPPVHKGtAR7x")
+
+	//strAddr := "/ip4/127.0.0.1/tcp/4001/ipfs/QmXBbs4x3E7f8TNgZPCcG38vgRFiZdeAC6qPPVHKGtAR7x"
+	strAddr := "/dns4/bootstrapper-1.rhz.network/tcp/4001/ipfs/Qmf8Lt1FiQnG7tLrQbhwvUXzBMYsj6KicNdKiD1F2rSRW5"
+	targetAddr, err := multiaddr.NewMultiaddr(strAddr)
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +111,7 @@ func main() {
 	fmt.Println("Connected to", targetInfo.ID)
 
 	// start domain name server
-	mdns, err := discovery.NewMdnsService(ctx, host, time.Second*10, "")
+	mdns, err := discovery.NewMdnsService(ctx, host, time.Second*10, "mydns")
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +133,9 @@ func main() {
 
 	select {
 	case <-stop: // exit program
+		mdns.Close()
 		dht.Close()
+		host.ConnManager().Close()
 		host.Network().Close()
 		host.Close()
 		os.Exit(0)
